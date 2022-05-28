@@ -1,16 +1,12 @@
-import pdb
 from django.contrib.auth import get_user_model
 from django.db.models import F
-
 from drf_extra_fields.fields import Base64ImageField
-
 from recipes.models import Ingredient, Recipe, Tag
-
 from rest_framework.serializers import (ModelSerializer, SerializerMethodField,
                                         ValidationError)
 
-from .services import (check_value_validate, is_hex_color,
-                       recipe_amount_ingredients_set)
+from .utils import (check_value_validate, is_hex_color,
+                    recipe_amount_ingredients_set)
 
 User = get_user_model()
 
@@ -34,9 +30,7 @@ class UserSerializer(ModelSerializer):
             'first_name',
             'last_name',
             'is_subscribed',
-            # 'password',
         )
-        # extra_kwargs = {'password': {'write_only': True}}
         read_only_fields = 'is_subscribed',
 
     def get_is_subscribed(self, obj):
@@ -44,49 +38,6 @@ class UserSerializer(ModelSerializer):
         if user.is_anonymous or (user == obj):
             return False
         return user.subscribe.filter(id=obj.id).exists()
-
-    def create(self, validated_data):
-        """ Создаёт нового пользователя с запрошенными полями.
-
-        Args:
-            validated_data (dict): Полученные проверенные данные.
-
-        Returns:
-            User: Созданный пользователь.
-        """
-        user = User(
-            email=validated_data['email'],
-            username=validated_data['username'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
-
-    # def validate_username(self, username):
-    #     """Проверяет введённый юзернейм.
-
-    #     Args:
-    #         username (str): Введёный пользователем юзернейм.
-
-    #     Raises:
-    #         ValidationError: Некорректная длина юзернейма.
-    #         ValidationError: Юзернейм содержит не только буквы.
-
-    #     Returns:
-    #         str: Юзернейм.
-    #     """
-    #     if len(username) < 3:
-    #         raise ValidationError(
-    #             'Длина username допустима от '
-    #             f'{3} до {150}'
-    #         )
-    #     if not username.isalpha():
-    #         raise ValidationError(
-    #             'В username допустимы только буквы.'
-    #         )
-    #     return username.capitalize()
 
 
 class UserSubscribeSerializer(UserSerializer):
@@ -111,7 +62,6 @@ class UserSubscribeSerializer(UserSerializer):
         return True
 
     def get_recipes_count(self, obj):
-        # pdb.set_trace()
         return obj.recipes.count()
 
 

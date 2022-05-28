@@ -1,7 +1,6 @@
 import os
-from datetime import timedelta
+
 from dotenv import load_dotenv
-from rest_framework import permissions
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -123,7 +122,6 @@ DJOSER = {
     'PERMISSIONS': {
         'resipe': ('api.permissions.AuthorOrReadOnly,',),
         'recipe_list': ('api.permissions.AuthorOrReadOnly',),
-        # 'user': ('api.permissions.IsAuthor',),
         'user_list': ('api.permissions.AuthorOrReadOnly',),
     },
     'SERIALIZERS': {
@@ -133,7 +131,3 @@ DJOSER = {
         'user_create': 'api.serializers.UserSerializer',
     },
 }
-
-# EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-# DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
-# EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_mails')

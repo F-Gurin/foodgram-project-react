@@ -1,31 +1,22 @@
-import pdb
-from datetime import datetime as dt
 from urllib.parse import unquote
 
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
-from django.shortcuts import get_object_or_404
 from django.http.response import HttpResponse
-
 from djoser.views import UserViewSet as DjoserUserViewSet
-
-from recipes.models import Ingredient, Recipe, Tag, AmountIngredient
-
+from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.status import (HTTP_204_NO_CONTENT,
-                                   HTTP_400_BAD_REQUEST,
-                                   HTTP_401_UNAUTHORIZED)
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from .mixins import AddDelViewMixin
-from rest_framework.pagination import PageNumberPagination
-from .permissions import IsAdminOrReadOnly, IsStaffOrReadOnly, AuthorOrReadOnly
-from .serializers import (UserSubscribeSerializer,
-                          IngredientSerializer, RecipeSerializer,
+from .permissions import AuthorOrReadOnly, IsAdminOrReadOnly
+from .serializers import (IngredientSerializer, RecipeSerializer,
                           ShortRecipeSerializer, TagSerializer,
-                          )
-from .services import incorrect_layout
+                          UserSubscribeSerializer)
+from .utils import incorrect_layout
 
 User = get_user_model()
 
@@ -145,21 +136,6 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
             measure=F('ingredients__measurement_unit')
         ).annotate(amount=Sum('amount'))
 
-        # filename = f'{user.username}_shopping_list.txt'
-        # shopping_list = (
-        #     f'Список покупок: пользователя {user.first_name}\n\n'
-        #     f'{dt.now().strftime(DATE_TIME_FORMAT)}\n\n'
-        # )
-
-        # for ing in ingredients:
-        #     shopping_list += (
-        #         f'{ing["ingredient"]}: {ing["amount"]} {ing["measure"]}\n'
-        #     )
-        # response = HttpResponse(
-        #     shopping_list, content_type='shopping_list.txt; charset=utf-8'
-        # )
-        # response['Content-Disposition'] = f'attachment; filename={filename}'
-# *******************
         shopping_list = []
         for item in ingredients:
             shopping_list.append(f'{item["ingredient"]} - {item["amount"]} '
@@ -169,5 +145,3 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         response['Content-Disposition'] = ('attachment; '
                                            'filename="shopping_list.txt"')
         return response
-# *******************
-        # return response

@@ -1,9 +1,8 @@
-from django.utils.safestring import mark_safe
-from django.contrib.admin import ModelAdmin, TabularInline, register, site
-from django.contrib import admin
+from django.contrib.admin import ModelAdmin, TabularInline, register
 from django.contrib.auth.admin import UserAdmin
+from django.utils.safestring import mark_safe
 
-from .models import Ingredient, Recipe, Tag, User, AmountIngredient
+from .models import AmountIngredient, Ingredient, Recipe, Tag, User
 
 
 @register(User)

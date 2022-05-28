@@ -21,10 +21,6 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
-    # @property
-    # def is_admin(self):
-    #     return self.role == self.ADMIN or self.is_superuser
-
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
@@ -71,21 +67,19 @@ class Ingredient(models.Model):
 class Recipe(models.Model):
     tags = models.ManyToManyField(Tag, blank=True, related_name='recipes')
     author = models.ForeignKey(
-        to=User,
+        User,
         on_delete=models.CASCADE,
         related_name='recipes',
         verbose_name='Автор'
     )
     ingredients = models.ManyToManyField(
-        to=Ingredient,
+        Ingredient,
         verbose_name='Ингредиенты блюда',
         related_name='recipes',
         through='recipes.AmountIngredient',
     )
-    is_favorited = models.BooleanField(blank=True,
-                                       null=True,)
-    is_in_shopping_cart = models.BooleanField(blank=True,
-                                              null=True,)
+    is_favorited = models.BooleanField(default=False,)
+    is_in_shopping_cart = models.BooleanField(default=False,)
     name = models.CharField(
         unique=True,
         max_length=200,
@@ -107,12 +101,12 @@ class Recipe(models.Model):
         auto_now=True
     )
     favorite = models.ManyToManyField(
-        to=User,
+        User,
         verbose_name='Любимые рецепты',
         related_name='favorites',
     )
     cart = models.ManyToManyField(
-        to=User,
+        User,
         verbose_name='Список покупок',
         related_name='carts',
     )
@@ -155,29 +149,3 @@ class AmountIngredient(models.Model):
 
     def __str__(self) -> str:
         return f'{self.amount} {self.ingredients}'
-
-
-class Follow(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='follower',
-        verbose_name='Подписчик'
-    )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='following',
-        verbose_name='Автор, на которого подписываются'
-    )
-
-    class Meta:
-        constraints = [models.UniqueConstraint(
-            fields=['user', 'author'],
-            name='unigue_subscriber'
-        )]
-        verbose_name = 'Подписка'
-        verbose_name_plural = 'Подписки'
-
-    def __str__(self):
-        return f'{self.user} подписан на {self.author}'

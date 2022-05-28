@@ -1,7 +1,4 @@
-import pdb
-
 from django.shortcuts import get_object_or_404
-
 from rest_framework.response import Response
 from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
                                    HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED)
@@ -28,19 +25,14 @@ class AddDelViewMixin:
         }
         manager = managers[manager]
 
-        # pdb.set_trace()
-
         obj = get_object_or_404(self.queryset, id=obj_id)
         serializer = self.add_serializer(
             obj, context={'request': self.request}
         )
         obj_exist = manager.filter(id=obj_id).exists()
 
-        # pdb.set_trace()
-
         if (self.request.method in ('GET', 'POST',)) and not obj_exist:
             manager.add(obj)
-            # pdb.set_trace()
             return Response(serializer.data, status=HTTP_201_CREATED)
 
         if (self.request.method in ('DELETE',)) and obj_exist:
