@@ -1,4 +1,6 @@
-from django.contrib.admin import ModelAdmin, TabularInline, register
+from django.contrib.admin import ModelAdmin
+from django.contrib.admin import register
+from django.contrib.admin import TabularInline
 from django.contrib.auth.admin import UserAdmin
 from django.utils.safestring import mark_safe
 

@@ -5,12 +5,24 @@ from django.db import models
 
 class User(AbstractUser):
 
-    password = models.CharField(max_length=150)
-    username = models.CharField(max_length=150, unique=True)
-    email = models.EmailField(max_length=254, unique=True)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
-    is_subscribed = models.BooleanField(blank=True, null=True)
+    password = models.CharField(max_length=150,
+                                verbose_name='Пароль'
+                                )
+    username = models.CharField(max_length=150,
+                                verbose_name='Логин',
+                                unique=True
+                                )
+    email = models.EmailField(max_length=254,
+                              verbose_name='Электронная почта',
+                              unique=True
+                              )
+    first_name = models.CharField(max_length=150,
+                                  verbose_name='Имя'
+                                  )
+    last_name = models.CharField(max_length=150,
+                                 verbose_name='Фамилия',
+                                 )
+    is_subscribed = models.BooleanField(default=False)
     subscribe = models.ManyToManyField(
         verbose_name='Подписка',
         related_name='subscribers',
@@ -18,59 +30,72 @@ class User(AbstractUser):
         symmetrical=False,
     )
 
-    def __str__(self):
-        return self.username
-
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('username',)
+
+    def __str__(self):
+        return self.username
 
 
 class Tag(models.Model):
     name = models.CharField(unique=True,
                             max_length=200,
                             db_index=True,
-                            verbose_name='Тег')
+                            verbose_name='Тег',
+                            )
     color = models.CharField(unique=True,
                              max_length=8,
+                             verbose_name='Цвет',
                              blank=True,
-                             null=True,)
+                             null=True,
+                             )
     slug = models.SlugField(unique=True,
                             max_length=200,
+                            verbose_name='Слаг',
                             blank=True,
-                            null=True,)
+                            null=True,
+                            )
+
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
 
     def __str__(self):
         return self.slug
-
-    class Meta:
-        verbose_name_plural = 'Теги'
-        verbose_name = 'Тег'
 
 
 class Ingredient(models.Model):
     name = models.CharField(unique=True,
                             max_length=200,
                             db_index=True,
-                            verbose_name='Ингредиент')
-    measurement_unit = models.CharField(max_length=200)
+                            verbose_name='Ингредиент',
+                            )
+    measurement_unit = models.CharField(max_length=200,
+                                        verbose_name='Единицы измерения',
+                                        )
+
+
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
         return self.name
 
-    class Meta:
-        verbose_name_plural = 'Ингредиенты'
-        verbose_name = 'Ингредиент'
-
 
 class Recipe(models.Model):
-    tags = models.ManyToManyField(Tag, blank=True, related_name='recipes')
+    tags = models.ManyToManyField(Tag,
+                                  blank=True,
+                                  verbose_name='Тег',
+                                  related_name='recipes',
+                                  )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='recipes',
-        verbose_name='Автор'
+        verbose_name='Автор',
     )
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -78,8 +103,6 @@ class Recipe(models.Model):
         related_name='recipes',
         through='recipes.AmountIngredient',
     )
-    is_favorited = models.BooleanField(default=False,)
-    is_in_shopping_cart = models.BooleanField(default=False,)
     name = models.CharField(
         unique=True,
         max_length=200,
@@ -112,8 +135,8 @@ class Recipe(models.Model):
     )
 
     class Meta:
-        verbose_name_plural = 'Рецепт'
-        verbose_name = 'Рецепты'
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
         ordering = ('-pub_date',)
 
 

@@ -1,16 +1,16 @@
-from urllib.parse import unquote
-
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http.response import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
-from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
+from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
 from .mixins import AddDelViewMixin
 from .permissions import AuthorOrReadOnly, IsAdminOrReadOnly
 from .serializers import (IngredientSerializer, RecipeSerializer,
@@ -54,62 +54,18 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAdminOrReadOnly,)
-
-    def get_queryset(self):
-        name = self.request.query_params.get('name')
-        queryset = self.queryset
-        if name:
-            if name[0] == '%':
-                name = unquote(name)
-            else:
-                name = name.translate(incorrect_layout)
-            name = name.lower()
-            stw_queryset = list(queryset.filter(name__startswith=name))
-            cnt_queryset = queryset.filter(name__contains=name)
-            stw_queryset.extend(
-                [i for i in cnt_queryset if i not in stw_queryset]
-            )
-            queryset = stw_queryset
-        return queryset
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ('name',)
 
 
 class RecipeViewSet(ModelViewSet, AddDelViewMixin):
-    queryset = Recipe.objects.select_related('author')
+    queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (AuthorOrReadOnly,)
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ('author', 'tags',)
     pagination_class = PageNumberPagination
     add_serializer = ShortRecipeSerializer
-
-    def get_queryset(self):
-        queryset = self.queryset
-
-        tags = self.request.query_params.getlist('tags')
-        if tags:
-            queryset = queryset.filter(
-                tags__slug__in=tags).distinct()
-
-        author = self.request.query_params.get('author')
-        if author:
-            queryset = queryset.filter(author=author)
-
-        user = self.request.user
-        if user.is_anonymous:
-            return queryset
-
-        is_in_shopping = self.request.query_params.get('is_in_shopping_cart')
-        if is_in_shopping in ('1', 'true'):
-            queryset = queryset.filter(cart=user.id)
-        elif is_in_shopping in ('0', 'false'):
-            queryset = queryset.exclude(cart=user.id)
-
-        is_favorited = self.request.query_params.get('is_favorited')
-        if is_favorited in ('1', 'true'):
-            queryset = queryset.filter(favorite=user.id)
-        if is_favorited in ('0', 'false'):
-            queryset = queryset.exclude(favorite=user.id)
-
-        return queryset
-
 
     def perform_destroy(self, serializer):
         super().perform_destroy(serializer)
@@ -125,8 +81,6 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     @action(methods=('get',), detail=False)
     def download_shopping_cart(self, request):
         user = self.request.user
-        if user.is_anonymous:
-            return Response(status=HTTP_401_UNAUTHORIZED)
         if not user.carts.exists():
             return Response(status=HTTP_400_BAD_REQUEST)
         ingredients = AmountIngredient.objects.filter(
@@ -134,11 +88,11 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
         ).values(
             ingredient=F('ingredients__name'),
             measure=F('ingredients__measurement_unit')
-        ).annotate(amount=Sum('amount'))
+        ).annotate(total_amount=Sum('amount'))
 
         shopping_list = []
         for item in ingredients:
-            shopping_list.append(f'{item["ingredient"]} - {item["amount"]} '
+            shopping_list.append(f'{item["ingredient"]} - {item["total_amount"]} '
                                  f'{item["measure"]} \n')
 
         response = HttpResponse(shopping_list, 'Content-Type: text/plain')

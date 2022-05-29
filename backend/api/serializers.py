@@ -1,10 +1,13 @@
+import pdb
+
 from django.contrib.auth import get_user_model
 from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import Ingredient, Recipe, Tag
-from rest_framework.serializers import (ModelSerializer, SerializerMethodField,
-                                        ValidationError)
+from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import SerializerMethodField
+from rest_framework.serializers import ValidationError
 
+from recipes.models import Ingredient, Recipe, Tag
 from .utils import (check_value_validate, is_hex_color,
                     recipe_amount_ingredients_set)
 
@@ -58,8 +61,11 @@ class UserSubscribeSerializer(UserSerializer):
         )
         read_only_fields = '__all__',
 
-    def get_is_subscribed(*args):
-        return True
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous or (user == obj):
+            return False
+        return user.subscribe.filter(id=obj.id).exists()
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
@@ -68,7 +74,7 @@ class UserSubscribeSerializer(UserSerializer):
 class TagSerializer(ModelSerializer):
     class Meta:
         model = Tag
-        fields = '__all__'
+        fields = ('id', 'name', 'color', 'slug')
         read_only_fields = '__all__',
 
     def validate_color(self, color):
@@ -80,14 +86,14 @@ class TagSerializer(ModelSerializer):
 class IngredientSerializer(ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = '__all__'
+        fields = ('id', 'name', 'measurement_unit')
         read_only_fields = '__all__',
 
 
 class RecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
-    ingredients = SerializerMethodField()
+    ingredients = IngredientSerializer(read_only=True, many=True)
     is_favorited = SerializerMethodField()
     is_in_shopping_cart = SerializerMethodField()
     image = Base64ImageField()
@@ -129,37 +135,35 @@ class RecipeSerializer(ModelSerializer):
             return False
         return user.carts.filter(id=obj.id).exists()
 
-    def validate(self, data):
-        name = str(self.initial_data.get('name')).strip()
-        tags = self.initial_data.get('tags')
-        ingredients = self.initial_data.get('ingredients')
-        values_as_list = (tags, ingredients)
+    def validate_ingredients(self, data):
+        pdb.set_trace()
+        ingredients = data
+        if not ingredients:
+            raise ValidationError('Не выбрано ни одного ингредиента!')
+        ingredients_ids = [ingredient['id'] for ingredient in ingredients]
+        if len(ingredients) != len(set(ingredients_ids)):
+            raise ValidationError('Дублирование ингедиента')
+        for ingredient in ingredients:
+            if int(ingredient['amount']) <= 0:
+                raise ValidationError('Количество должно быть положительным!')
+            pk = int(ingredient['id'])
+            if pk < 0:
+                raise ValidationError('Введите положительный id')
+        return data
 
-        for value in values_as_list:
-            if not isinstance(value, list):
-                raise ValidationError(
-                    f'"{value}" должен быть в формате "[]"'
-                )
+    def validate_tags(self, data):
+        pdb.set_trace()
+        if not data:
+            raise ValidationError('Необходимо отметить хотя бы один тег')
+        if len(data) != len(set(data)):
+            raise ValidationError('Тег указан дважды')
+        
+        return data
 
-        for tag in tags:
-            check_value_validate(tag, Tag)
-
-        valid_ingredients = []
-        for ing in ingredients:
-            ing_id = ing.get('id')
-            ingredient = check_value_validate(ing_id, Ingredient)
-
-            amount = ing.get('amount')
-            check_value_validate(amount)
-
-            valid_ingredients.append(
-                {'ingredient': ingredient, 'amount': amount}
-            )
-
-        data['name'] = name.capitalize()
-        data['tags'] = tags
-        data['ingredients'] = valid_ingredients
-        data['author'] = self.context.get('request').user
+    def validate_cooking_time(self, data):
+        pdb.set_trace()
+        if data <= 0:
+            raise ValidationError('Время готовки должно быть не менее минуты!')
         return data
 
     def create(self, validated_data):
@@ -175,15 +179,6 @@ class RecipeSerializer(ModelSerializer):
         tags = validated_data.get('tags')
         ingredients = validated_data.get('ingredients')
 
-        recipe.image = validated_data.get(
-            'image', recipe.image)
-        recipe.name = validated_data.get(
-            'name', recipe.name)
-        recipe.text = validated_data.get(
-            'text', recipe.text)
-        recipe.cooking_time = validated_data.get(
-            'cooking_time', recipe.cooking_time)
-
         if tags:
             recipe.tags.clear()
             recipe.tags.set(tags)
@@ -192,5 +187,4 @@ class RecipeSerializer(ModelSerializer):
             recipe.ingredients.clear()
             recipe_amount_ingredients_set(recipe, ingredients)
 
-        recipe.save()
-        return recipe
+        return super().update(recipe, validated_data)
