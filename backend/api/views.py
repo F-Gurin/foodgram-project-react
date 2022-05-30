@@ -67,8 +67,41 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     pagination_class = PageNumberPagination
     add_serializer = ShortRecipeSerializer
 
-    def perform_destroy(self, serializer):
-        super().perform_destroy(serializer)
+    def get_queryset(self):
+        """Получает queryset в соответствии с параметрами запроса.
+
+        Returns:
+            QuerySet: Список запрошенных объектов.
+        """
+        queryset = self.queryset
+
+        tags = self.request.query_params.getlist(conf.TAGS)
+        if tags:
+            queryset = queryset.filter(
+                tags__slug__in=tags).distinct()
+
+        author = self.request.query_params.get(conf.AUTHOR)
+        if author:
+            queryset = queryset.filter(author=author)
+
+        # Следующие фильтры только для авторизованного пользователя
+        user = self.request.user
+        if user.is_anonymous:
+            return queryset
+
+        is_in_shopping = self.request.query_params.get('is_in_shopping_cart')
+        if is_in_shopping in ('1', 'true',):
+            queryset = queryset.filter(cart=user.id)
+        elif is_in_shopping in ('0', 'false',):
+            queryset = queryset.exclude(cart=user.id)
+
+        is_favorited = self.request.query_params.get('is_favorited')
+        if is_favorited in ('1', 'true',):
+            queryset = queryset.filter(favorite=user.id)
+        if is_favorited in ('0', 'false',):
+            queryset = queryset.exclude(favorite=user.id)
+
+        return queryset
 
     @action(methods=('get', 'post', 'delete'), detail=True)
     def favorite(self, request, pk):

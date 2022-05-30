@@ -1,5 +1,3 @@
-import pdb
-
 from django.contrib.auth import get_user_model
 from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField
@@ -60,12 +58,6 @@ class UserSubscribeSerializer(UserSerializer):
             'recipes_count',
         )
         read_only_fields = '__all__',
-
-    def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
-        if user.is_anonymous or (user == obj):
-            return False
-        return user.subscribe.filter(id=obj.id).exists()
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
@@ -136,7 +128,6 @@ class RecipeSerializer(ModelSerializer):
         return user.carts.filter(id=obj.id).exists()
 
     def validate_ingredients(self, data):
-        pdb.set_trace()
         ingredients = data
         if not ingredients:
             raise ValidationError('Не выбрано ни одного ингредиента!')
@@ -152,7 +143,6 @@ class RecipeSerializer(ModelSerializer):
         return data
 
     def validate_tags(self, data):
-        pdb.set_trace()
         if not data:
             raise ValidationError('Необходимо отметить хотя бы один тег')
         if len(data) != len(set(data)):
@@ -161,7 +151,6 @@ class RecipeSerializer(ModelSerializer):
         return data
 
     def validate_cooking_time(self, data):
-        pdb.set_trace()
         if data <= 0:
             raise ValidationError('Время готовки должно быть не менее минуты!')
         return data
