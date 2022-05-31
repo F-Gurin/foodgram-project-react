@@ -1,9 +1,14 @@
+import pdb
+
 from django.contrib.auth import get_user_model
 from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.serializers import ModelSerializer
 from rest_framework.serializers import SerializerMethodField
 from rest_framework.serializers import ValidationError
+from rest_framework.serializers import PrimaryKeyRelatedField
+from rest_framework.serializers import IntegerField
+from rest_framework.validators import UniqueValidator
 
 from recipes.models import Ingredient, Recipe, Tag
 from .utils import (check_value_validate, is_hex_color,
@@ -67,7 +72,7 @@ class TagSerializer(ModelSerializer):
     class Meta:
         model = Tag
         fields = ('id', 'name', 'color', 'slug')
-        read_only_fields = '__all__',
+        # read_only_fields = '__all__',
 
     def validate_color(self, color):
         color = str(color).strip(' #')
@@ -79,13 +84,27 @@ class IngredientSerializer(ModelSerializer):
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
-        read_only_fields = '__all__',
+        # read_only_fields = '__all__',
+
+
+class ShortIngredientSerializer(ModelSerializer):
+
+    id = PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(), validators=[
+            UniqueValidator(queryset=Ingredient.objects.all())
+        ]
+    )
+    amount = IntegerField(min_value=1)
+
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'amount')
 
 
 class RecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
-    ingredients = IngredientSerializer(read_only=True, many=True)
+    ingredients = ShortIngredientSerializer(many=True)
     is_favorited = SerializerMethodField()
     is_in_shopping_cart = SerializerMethodField()
     image = Base64ImageField()
@@ -110,6 +129,7 @@ class RecipeSerializer(ModelSerializer):
         )
 
     def get_ingredients(self, obj):
+        pdb.set_trace()
         ingredients = obj.ingredients.values(
             'id', 'name', 'measurement_unit', amount=F('recipe__amount')
         )
@@ -128,6 +148,7 @@ class RecipeSerializer(ModelSerializer):
         return user.carts.filter(id=obj.id).exists()
 
     def validate_ingredients(self, data):
+        pdb.set_trace()
         ingredients = data
         if not ingredients:
             raise ValidationError('Не выбрано ни одного ингредиента!')
@@ -143,6 +164,7 @@ class RecipeSerializer(ModelSerializer):
         return data
 
     def validate_tags(self, data):
+        pdb.set_trace()
         if not data:
             raise ValidationError('Необходимо отметить хотя бы один тег')
         if len(data) != len(set(data)):
@@ -156,6 +178,7 @@ class RecipeSerializer(ModelSerializer):
         return data
 
     def create(self, validated_data):
+        pdb.set_trace()
         image = validated_data.pop('image')
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
