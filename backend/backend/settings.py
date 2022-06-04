@@ -9,7 +9,14 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    '62.84.122.99',
+    'localhost',
+    'yatubeya.ru',
+    'www.yatubeya.ru',
+    'backend',
+]
 
 
 INSTALLED_APPS = [
