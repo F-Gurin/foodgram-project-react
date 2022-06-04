@@ -76,7 +76,6 @@ class Ingredient(models.Model):
                                         verbose_name='Единицы измерения',
                                         )
 
-
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'

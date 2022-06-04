@@ -14,20 +14,6 @@ def recipe_amount_ingredients_set(recipe, ingredients):
         )
 
 
-def check_value_validate(value, klass=None):
-    if not str(value).isdecimal():
-        raise ValidationError(
-            f'{value} должно быть цифрой'
-        )
-    if klass:
-        obj = klass.objects.filter(id=value)
-        if not obj:
-            raise ValidationError(
-                f'{value} не существует'
-            )
-        return obj[0]
-
-
 def is_hex_color(value):
     if len(value) not in (3, 6):
         raise ValidationError(

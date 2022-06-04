@@ -80,10 +80,6 @@ class IngredientSerializer(ModelSerializer):
         fields = ('id', 'name', 'measurement_unit')
         read_only_fields = '__all__',
 
-    class Meta:
-        model = Ingredient
-        fields = ('id', 'amount')
-
 
 class RecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
@@ -113,10 +109,9 @@ class RecipeSerializer(ModelSerializer):
         )
 
     def get_ingredients(self, obj):
-        ingredients = obj.ingredients.values(
+        return obj.ingredients.values(
             'id', 'name', 'measurement_unit', amount=F('recipe__amount')
         )
-        return ingredients
 
     def get_is_favorited(self, obj):
         user = self.context.get('request').user

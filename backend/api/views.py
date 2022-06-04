@@ -89,8 +89,10 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
 
         shopping_list = []
         for item in ingredients:
-            shopping_list.append(f'{item["ingredient"]} - {item["total_amount"]} '
-                                 f'{item["measure"]} \n')
+            shopping_list.append(
+                f'{item["ingredient"]} - {item["total_amount"]} '
+                f'{item["measure"]} \n'
+            )
 
         response = HttpResponse(shopping_list, 'Content-Type: text/plain')
         response['Content-Disposition'] = ('attachment; '
