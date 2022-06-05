@@ -8,7 +8,7 @@ services:
       - ./.env
 
   backend:
-    image: capralg/foodgram-backend:latest
+    image: capralg/foodgram_backend:latest
     restart: always
     expose:
         - 8000
@@ -21,7 +21,7 @@ services:
       - ./.env
 
   frontend:
-    image:  2701998123/foodgram-frontend:latest
+    image:  2701998123/foodgram_frontend:latest
     volumes:
       - ../frontend/:/foodgram/result_build/
     depends_on:
