@@ -13,8 +13,8 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '62.84.122.99',
     'localhost',
-    'yatubeya.ru',
-    'www.yatubeya.ru',
+    'foodgramio.sytes.net',
+    'www.foodgramio.sytes.net',
     'backend',
 ]
 
