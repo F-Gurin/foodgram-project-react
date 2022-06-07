@@ -21,7 +21,7 @@ services:
       - ./.env
 
   frontend:
-    image:  2701998123/foodgram_frontend:latest
+    image:  capralg/foodgram_frontend:latest
     volumes:
       - ../frontend/:/foodgram/result_build/
     depends_on:
