@@ -23,7 +23,7 @@ services:
   frontend:
     image:  capralg/foodgram_frontend:latest
     volumes:
-      - ../frontend/:/foodgram/result_build/
+      - ../frontend/:/app/result_build/
     depends_on:
       - db
 
