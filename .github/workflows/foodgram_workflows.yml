@@ -69,7 +69,6 @@ jobs:
             sudo docker pull capralg/foodgram_backend
             sudo docker-compose stop
             sudo docker-compose rm backend
-            sudo docker-compose rm nginx
             sudo touch .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
