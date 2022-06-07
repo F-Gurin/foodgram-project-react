@@ -67,7 +67,6 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             sudo docker pull capralg/foodgram_backend
-            sudo docker pull capralg/foodgram_frontend
             sudo docker-compose stop
             sudo docker-compose rm backend
             sudo docker-compose rm nginx
