@@ -8,6 +8,8 @@ volumes:
 services:
   db:
     image: postgres:12.4
+    restart: always
+    container_name: db
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
@@ -18,9 +20,10 @@ services:
   backend:
     image: capralg/foodgram_backend:latest
     restart: always
+    container_name: backend
     volumes:
-      - static_value:/app/static/
-      - media_value:/app/media/
+      - static_value:/backend/static/
+      - media_value:/media/
     depends_on:
       - db
     env_file:
@@ -28,13 +31,15 @@ services:
 
   frontend:
     image: capralg/foodgram_frontend:latest
+    container_name: frontend
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
       - backend
 
   nginx:
-    image: nginx:1.19.3       
+    image: nginx:1.19.3
+    container_name: nginx       
     ports:
       - "80:80"
     volumes:
