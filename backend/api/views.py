@@ -11,7 +11,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from recipes.models import AmountIngredient, Ingredient, Recipe, Tag
-from .filters import RecipeFilter
+from .filters import RecipeFilter, IngredientSearchFilter
 from .mixins import AddDelViewMixin
 from .permissions import AuthorOrReadOnly, IsAdminOrReadOnly
 from .serializers import (IngredientSerializer, RecipeSerializer,
@@ -54,15 +54,15 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ('name',)
+    filter_backends = [IngredientSearchFilter]
+    search_fields = ('^name',)
 
 
 class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (AuthorOrReadOnly,)
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     pagination_class = PageNumberPagination
     add_serializer = ShortRecipeSerializer
