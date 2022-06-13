@@ -3,7 +3,7 @@ from django.db.models import F, Sum
 from django.http.response import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
+from .paginators import LimitPageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED
@@ -24,7 +24,7 @@ DATE_TIME_FORMAT = '%d/%m/%Y %H:%M'
 
 
 class UserViewSet(DjoserUserViewSet, AddDelViewMixin):
-    pagination_class = PageNumberPagination
+    pagination_class = LimitPageNumberPagination
     add_serializer = UserSubscribeSerializer
 
     @action(methods=('get', 'post', 'delete'), detail=True)
@@ -64,7 +64,7 @@ class RecipeViewSet(ModelViewSet, AddDelViewMixin):
     permission_classes = (AuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    pagination_class = PageNumberPagination
+    pagination_class = LimitPageNumberPagination
     add_serializer = ShortRecipeSerializer
 
     @action(methods=('get', 'post', 'delete'), detail=True)
