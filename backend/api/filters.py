@@ -21,7 +21,7 @@ class RecipeFilter(FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ('tags', 'author', 'is_in_shopping_cart', 'is_favorited')
+        fields = ('tags', 'author', 'is_in_shopping_cart', 'is_favorited',)
 
     def filter_is_favorited(self, queryset, name, value):
         if value and not self.request.user.is_anonymous:
