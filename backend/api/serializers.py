@@ -78,7 +78,7 @@ class UserSubscribeSerializer(UserSerializer):
 class TagSerializer(ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('id', 'name', 'color', 'slug')
+        fields = ('id', 'name', 'color', 'slug',)
         read_only_fields = '__all__',
 
     def validate_color(self, color):
