@@ -99,11 +99,11 @@ function App() {
     })
   }
 
-  // const loadSingleItem = ({ id, callback }) => {
-  //   setTimeout(_ => {
-  //     callback()
-  //   }, 3000)
-  // }
+  const loadSingleItem = ({ id, callback }) => {
+    setTimeout(_ => {
+      callback()
+    }, 3000)
+  }
 
   const history = useHistory()
   const onSignOut = () => {
