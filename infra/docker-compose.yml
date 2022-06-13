@@ -23,7 +23,7 @@ services:
     container_name: backend
     volumes:
       - static_value:app/backend/static/
-      - media_value:app/backend/media/
+      - media_value:media/
     depends_on:
       - db
     env_file:
