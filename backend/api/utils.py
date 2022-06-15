@@ -2,8 +2,6 @@ from string import hexdigits
 
 from rest_framework.serializers import ValidationError
 
-from recipes.models import AmountIngredient
-
 
 def is_hex_color(value):
     if len(value) not in (3, 6):

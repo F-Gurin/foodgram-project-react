@@ -1,16 +1,12 @@
-import pdb
-
 from django.contrib.auth import get_user_model
 from django.db.models import F
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.serializers import ModelSerializer
 from rest_framework.serializers import SerializerMethodField
 from rest_framework.serializers import ValidationError
-from rest_framework.serializers import StringRelatedField
 from rest_framework.serializers import PrimaryKeyRelatedField
 from rest_framework.serializers import BooleanField
 from rest_framework.serializers import IntegerField
-from rest_framework.validators import UniqueTogetherValidator
 
 from recipes.models import Ingredient, Recipe, Tag, AmountIngredient
 from .utils import (is_hex_color)
@@ -167,7 +163,6 @@ class RecipeSerializer(ModelSerializer):
                 })
         return data
 
-
     def validate_tags(self, data):
         if not data:
             raise ValidationError('Необходимо отметить хотя бы один тег')
@@ -188,9 +183,6 @@ class RecipeSerializer(ModelSerializer):
                 ingredients=ingredient.get("id"),
                 amount=ingredient.get("amount"),
             )
-            # AmountIngredient.objects.create(
-            #     recipe=recipe, ingredients=ingredient['id'],
-            #     amount=ingredient['amount'])
 
     @staticmethod
     def create_tags(tags, recipe):
@@ -204,7 +196,6 @@ class RecipeSerializer(ModelSerializer):
         recipe = Recipe.objects.create(author=author, **validated_data)
         self.create_tags(tags, recipe)
         self.create_ingredients(ingredients, recipe)
-        pdb.set_trace()
         return recipe
 
     def update(self, instance, validated_data):
@@ -212,5 +203,4 @@ class RecipeSerializer(ModelSerializer):
         AmountIngredient.objects.filter(recipe=instance).delete()
         self.create_tags(validated_data.pop('tags'), instance)
         self.create_ingredients(validated_data.pop('ingredients'), instance)
-        pdb.set_trace()
         return super().update(instance, validated_data)
