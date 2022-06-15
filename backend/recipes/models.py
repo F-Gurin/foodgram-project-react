@@ -152,7 +152,7 @@ class AmountIngredient(models.Model):
         related_name='recipe',
         on_delete=models.CASCADE,
     )
-    amount = models.IntegerField(
+    amount = models.PositiveIntegerField(
         verbose_name='Количество',
         default=0,
         validators=[MinValueValidator(1)],
