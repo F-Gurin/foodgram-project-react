@@ -113,7 +113,7 @@ class RecipeSerializer(ModelSerializer):
     is_favorited = BooleanField(read_only=True)
     is_in_shopping_cart = BooleanField(read_only=True)
     cooking_time = IntegerField()
-    image = Base64ImageField()
+    image = Base64ImageField(max_length=None, use_url=True)
 
     class Meta:
         model = Recipe
