@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
 from django.http.response import HttpResponse
 from djoser.views import UserViewSet as DjoserUserViewSet
@@ -18,7 +17,6 @@ from .serializers import (IngredientSerializer, RecipeSerializer,
                           ShortRecipeSerializer, TagSerializer,
                           UserSubscribeSerializer)
 
-User = get_user_model()
 
 DATE_TIME_FORMAT = '%d/%m/%Y %H:%M'
 
@@ -31,7 +29,7 @@ class UserViewSet(DjoserUserViewSet, AddDelViewMixin):
     def subscribe(self, request, id):
         return self.add_del_obj(id, 'subscribe')
 
-    @action(methods=('get',), detail=False)
+    @action(detail=False,)
     def subscriptions(self, request):
         user = self.request.user
         if user.is_anonymous:
