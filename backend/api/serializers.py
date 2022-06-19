@@ -7,7 +7,6 @@ from rest_framework.serializers import ValidationError
 from rest_framework.serializers import PrimaryKeyRelatedField
 from rest_framework.serializers import BooleanField
 from rest_framework.serializers import IntegerField
-from rest_framework.serializers import ReadOnlyField
 from rest_framework.serializers import SlugRelatedField
 
 from recipes.models import Ingredient, Recipe, Tag, AmountIngredient
@@ -100,10 +99,6 @@ class IngredientSerializer(ModelSerializer):
 
 
 class RecipeIngredientReadSerializer(ModelSerializer):
-    # id = ReadOnlyField(source='ingredient.id')
-    # name = ReadOnlyField(source='ingredient.name')
-    # measurement_unit = ReadOnlyField(
-    #     source='ingredient.measurement_unit')
     id = PrimaryKeyRelatedField(
         read_only=True,
         source='ingredients'
@@ -154,7 +149,6 @@ class RecipeReadSerializer(ModelSerializer):
         if user.is_anonymous:
             return False
         return user.carts.filter(id=obj.id).exists()
-
 
 
 class RecipeIngredientWriteSerializer(ModelSerializer):
