@@ -7,6 +7,8 @@ from rest_framework.serializers import ValidationError
 from rest_framework.serializers import PrimaryKeyRelatedField
 from rest_framework.serializers import BooleanField
 from rest_framework.serializers import IntegerField
+from rest_framework.serializers import ReadOnlyField
+from rest_framework.serializers import SlugRelatedField
 
 from recipes.models import Ingredient, Recipe, Tag, AmountIngredient
 from .utils import (is_hex_color)
@@ -97,6 +99,64 @@ class IngredientSerializer(ModelSerializer):
         read_only_fields = '__all__',
 
 
+class RecipeIngredientReadSerializer(ModelSerializer):
+    # id = ReadOnlyField(source='ingredient.id')
+    # name = ReadOnlyField(source='ingredient.name')
+    # measurement_unit = ReadOnlyField(
+    #     source='ingredient.measurement_unit')
+    id = PrimaryKeyRelatedField(
+        read_only=True,
+        source='ingredients'
+    )
+    name = SlugRelatedField(
+        source='ingredients',
+        read_only=True,
+        slug_field='name'
+    )
+    measurement_unit = SlugRelatedField(
+        source='ingredients',
+        read_only=True,
+        slug_field='measurement_unit'
+    )
+
+    class Meta:
+        model = AmountIngredient
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
+class RecipeReadSerializer(ModelSerializer):
+    tags = TagSerializer(many=True, read_only=True)
+    author = UserSerializer(read_only=True)
+    ingredients = SerializerMethodField(read_only=True)
+    # ingredients = RecipeIngredientReadSerializer(many=True)
+    is_favorited = SerializerMethodField(read_only=True)
+    is_in_shopping_cart = SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id', 'name', 'tags', 'author', 'ingredients', 'is_favorited',
+            'is_in_shopping_cart', 'image', 'text', 'cooking_time',
+        )
+
+    def get_ingredients(self, obj):
+        queryset = AmountIngredient.objects.filter(recipe=obj)
+        return RecipeIngredientReadSerializer(queryset, many=True).data
+
+    def get_is_favorited(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return user.favorites.filter(id=obj.id).exists()
+
+    def get_is_in_shopping_cart(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return user.carts.filter(id=obj.id).exists()
+
+
+
 class RecipeIngredientWriteSerializer(ModelSerializer):
     id = PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
 
@@ -108,6 +168,7 @@ class RecipeIngredientWriteSerializer(ModelSerializer):
 class RecipeSerializer(ModelSerializer):
     tags = PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True)
+    # tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
     ingredients = RecipeIngredientWriteSerializer(many=True)
     is_favorited = BooleanField(read_only=True)
@@ -204,3 +265,9 @@ class RecipeSerializer(ModelSerializer):
         self.create_tags(validated_data.pop('tags'), instance)
         self.create_ingredients(validated_data.pop('ingredients'), instance)
         return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return RecipeReadSerializer(
+            instance, context=context).data
