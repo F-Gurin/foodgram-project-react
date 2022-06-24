@@ -7,7 +7,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv()
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
@@ -137,7 +137,7 @@ DJOSER = {
         'resipe': ('api.permissions.AuthorOrReadOnly,',),
         'recipe_list': ('api.permissions.AuthorOrReadOnly',),
         'user_list': ('api.permissions.AuthorOrReadOnly',),
-        'user': ('api.permissions.AuthorOrReadOnly'),
+        'user': ('api.permissions.AuthorOrReadOnly',),
     },
     'SERIALIZERS': {
         'user': 'api.serializers.UserSerializer',
