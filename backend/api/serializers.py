@@ -58,7 +58,6 @@ class UserSerializer(ModelSerializer):
 
 
 class UserSubscribeSerializer(UserSerializer):
-    # recipes = ShortRecipeSerializer(many=True, read_only=True)
     recipes = SerializerMethodField(read_only=True)
     recipes_count = SerializerMethodField()
 
