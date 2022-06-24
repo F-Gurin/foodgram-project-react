@@ -58,7 +58,8 @@ class UserSerializer(ModelSerializer):
 
 
 class UserSubscribeSerializer(UserSerializer):
-    recipes = ShortRecipeSerializer(many=True, read_only=True)
+    # recipes = ShortRecipeSerializer(many=True, read_only=True)
+    recipes = SerializerMethodField(read_only=True)
     recipes_count = SerializerMethodField()
 
     class Meta:
@@ -77,6 +78,18 @@ class UserSubscribeSerializer(UserSerializer):
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
+
+    def get_recipes(self, obj):
+        request = self.context.get('request', )
+        if not request or request.user.is_anonymous:
+            return False
+        context = {'request': request}
+        recipes_limit = request.query_params.get('recipes_limit', )
+        if recipes_limit is not None:
+            recipes = obj.recipes.all()[:int(recipes_limit)]
+        else:
+            recipes = obj.recipes.all()
+        return ShortRecipeSerializer(recipes, many=True, context=context).data
 
 
 class TagSerializer(ModelSerializer):
