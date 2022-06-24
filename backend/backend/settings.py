@@ -134,10 +134,10 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
     'PERMISSIONS': {
-        'resipe': ('api.permissions.AuthorOrReadOnly,',),
-        'recipe_list': ('api.permissions.AuthorOrReadOnly',),
-        'user_list': ('api.permissions.AuthorOrReadOnly',),
-        'user': ('api.permissions.AuthorOrReadOnly',),
+        'resipe': ['api.permissions.AuthorOrReadOnly,'],
+        'recipe_list': ['api.permissions.AuthorOrReadOnly'],
+        'user_list': ['api.permissions.AuthorOrReadOnly'],
+        'user': ['api.permissions.AuthorOrReadOnly'],
     },
     'SERIALIZERS': {
         'user': 'api.serializers.UserSerializer',
